@@ -1,0 +1,657 @@
+include irvine32.inc
+
+.data
+;put your static data
+;; Computer
+RowSize = 10
+RSize dword 5      ; num = 0            ; size of RShip
+BSize dword 4      ; num = 1            ; size of BShip
+USize dword 3      ; num = 2            ; size of UShip
+SSize dword 3      ; num = 3            ; size of SShip
+DSize dword 2      ; num = 4            ; size of DShip
+Count dword 0                           ; number of ship
+PSize dword 0                           ; size of ship for CheckIndexRandom function
+OuterLoopSize dword 0                     ; size of outer loop
+Character byte '0'                      ; ship character 
+RowIndex dword 0                        ; Random RowIndex
+ColumnIndex dword 0                     ; Random ColumnIndex
+Row dword 0                             ; counter of Rows
+XTurn dword ?                           ; Random X for playing
+YTurn dword ?                           ; Random Y for playing
+
+;; USer 
+
+;PlayerOcean byte 100 dup (0)
+arrayCount byte 27 dup (0)
+RowE byte 0
+RowS byte 0
+CountS dword 0
+RowNo byte 0
+Col byte 0 
+Counter byte 0
+numR byte 10
+GenralSize byte 0
+PlayersShips byte 27 dup (0)
+ShowS byte ?
+;Character byte 0
+ValidShip byte 0
+
+;;;; Hit &  miss
+
+missSTR byte "MISS",0
+hitSTR byte "HIT",0
+sunk byte "THE SHIP SUNK",0
+ComputersShips byte 27 dup (0) 
+PlayersShips byte 27 dup (0)
+index dword ?
+
+
+.code
+
+CheckIndexRandom PROTO ComputerOcean : PTR Byte
+GetIndex proto  , r:byte ,cols:byte 
+PlayersTurn PROto   ,PlayersOcean : ptr byte ,ComputersTarget :ptr byte,r: byte ,cols: byte 
+ComputersTurn PROto, ComputerOcean: ptr byte, PlayersTarget : ptr byte , r:byte , cols:byte
+UserPlacment PROTO , PlayerO:PTR Byte ,Input:PTR BYTE
+VerticalU PROTO PlayerO : ptr byte
+;Write your functions here
+;Do not forget to modify main.def file accordingly 
+
+
+Random PROC                             ; Generate Random value
+
+rdtsc
+mov ebx , RowSize
+mov edx , 0
+div ebx
+
+RET
+Random ENDP
+
+CheckShip PROC  ComputerOcean : PTR Byte               ; Place the five ships
+
+mov ecx , 5
+mov edx , 0
+
+Ship :
+cmp ecx , 0
+je K
+mov OuterLoopSize , ecx
+mov Count , edx 
+cmp edx , 0
+je RShip
+cmp edx , 1
+je BShip
+cmp edx , 2
+je UShip
+cmp edx , 3
+je SShip
+cmp edx , 4
+je DShip
+
+RShip:
+mov edx , RSize
+mov PSize , edx
+mov Character , 'R'
+mov  edi , ComputerOcean
+invoke CheckIndexRandom , ComputerOcean 
+jmp Done
+
+BShip:
+mov edx , BSize
+mov PSize , edx
+mov Character , 'B'
+invoke CheckIndexRandom , ComputerOcean
+jmp Done
+
+UShip:
+mov edx , USize
+mov PSize , edx
+mov Character , 'U'
+mov  edi , ComputerOcean
+invoke CheckIndexRandom , ComputerOcean 
+jmp Done
+
+SShip:
+mov edx , SSize
+mov PSize , edx
+mov Character , 'S'
+mov  edi , ComputerOcean
+invoke CheckIndexRandom , ComputerOcean  
+jmp Done
+
+DShip:
+mov edx , DSize
+mov PSize , edx
+mov Character , 'D'
+mov  edi , ComputerOcean
+invoke CheckIndexRandom , ComputerOcean  
+
+Done:
+mov ecx ,OuterLoopSize
+dec ecx
+mov edx , Count
+inc edx
+
+jmp Ship
+k:
+RET
+CheckShip ENDP
+
+
+
+CheckIndexRandom PROC ComputerOcean : PTR Byte    ; place the five ships in the array(Computer Ocean)
+
+Check:
+mov  edi , ComputerOcean
+
+call Random 
+mov ColumnIndex , edx
+
+call Random 
+mov RowIndex , edx
+
+mov edx , ColumnIndex
+add edx , PSize
+cmp edx ,9
+jnbe Vertical
+
+mov ecx , PSize
+
+mov esi , ComputerOcean
+add esi , ColumnIndex
+mov eax , RowSize
+mul RowIndex
+add esi , eax
+
+L1:
+mov dl , '0'
+cmp byte ptr[esi], dl
+jne Vertical
+inc esi
+Loop L1
+
+mov esi ,  ComputerOcean
+add esi , ColumnIndex
+mov eax , RowSize
+mul RowIndex
+add esi , eax
+mov ecx ,PSize
+
+L2:
+mov dl , Character
+mov byte ptr[esi] , dl
+movzx edi , byte ptr[esi]
+inc esi
+Loop L2
+jmp OK
+
+Vertical:
+
+mov edx , RowIndex
+add edx , PSize
+cmp edx ,9
+jnbe Check
+
+
+
+mov ebx , RowIndex
+mov Row , ebx
+mov ecx ,PSize
+
+L3:
+mov esi , ComputerOcean
+add esi , ColumnIndex
+mov eax , RowSize 
+mul Row
+add esi , eax
+mov dl ,'0'
+cmp byte ptr[esi], dl
+
+jne Check
+inc Row
+Loop L3
+
+mov ebx , RowIndex
+mov Row , ebx
+mov ecx ,PSize
+
+L4:
+mov esi , ComputerOcean
+add esi , ColumnIndex
+mov eax , RowSize 
+mul Row
+add esi , eax
+mov dl , Character
+mov byte ptr[esi] , dl
+inc Row
+Loop L4
+
+OK:
+
+RET
+CheckIndexRandom ENDP
+ 
+;;;;;; Hit & miss
+
+SetShips Proc
+mov esi,offset ComputersShips
+mov edi,offset PlayersShips
+mov eax ,0
+mov ebx,0
+mov al,'B'
+sub al,'A'
+mov bl,4
+add esi,eax
+add edi,eax
+mov [esi],bl
+mov [edi],bl
+mov eax ,0
+mov ebx,0
+mov al,'R'
+sub al,'A'
+mov bl,5
+mov esi,offset ComputersShips
+mov edi,offset PlayersShips
+add esi,eax
+add edi,eax
+mov [esi],bl
+mov [edi],bl
+mov eax ,0
+mov ebx,0
+mov al,'S'
+sub al,'A'
+mov bl,3
+mov esi,offset ComputersShips
+mov edi,offset PlayersShips
+add esi,eax
+add edi,eax
+mov [esi],bl
+mov [edi],bl
+mov eax ,0
+mov ebx,0
+mov al,'U'
+sub al,'A'
+mov bl,3
+mov esi,offset ComputersShips
+mov edi,offset PlayersShips
+add esi,eax
+add edi,eax
+mov [esi],bl
+mov [edi],bl
+mov eax ,0
+mov ebx,0
+mov al,'D'
+sub al,'A'
+mov bl,2
+mov esi,offset ComputersShips
+mov edi,offset PlayersShips
+add esi,eax
+add edi,eax
+mov [esi],bl
+mov [edi],bl
+ret
+SetShips endp
+
+GetIndex proc  ,r:byte ,cols:byte 
+
+mov eax,0
+mov ebx,0
+mov ecx,0
+mov eax,10
+mul r
+mov ebx,eax
+movzx ecx,cols
+add ecx,ebx
+mov index,ecx
+mov eax,ecx
+
+;call writedec
+;call crlf
+ret
+GetIndex endp
+
+
+PlayersTurn PROC,ComputersOcean : ptr byte ,PlayersTarget :ptr byte,Pr: byte ,Pcols: byte 
+invoke GetIndex , Pr  , Pcols
+mov eax,0
+mov ecx,0
+mov ebx,0
+mov edx, ComputersOcean
+add edx, index
+mov cl,[edx]
+mov esi, PlayersTarget
+add esi,index
+cmp cl,'*'
+je NOTVALID
+cmp cl,'#'
+je NOTVALID
+cmp cl, '0'
+jne HIT
+mov bl,'x'
+mov [esi],bl
+mov bl,'#'
+mov [edx],bl
+mov eax,0 
+jmp done
+HIT:
+mov bl ,'o'
+mov [esi],bl
+mov bl,'*'
+mov [edx],bl
+sub cl,'A'
+mov edx,offset PlayersShips
+add edx,ecx
+mov bl,[edx]
+dec bl
+mov [edx],bl
+mov eax,1
+cmp bl,0
+jne done
+mov eax,2
+jmp done
+NOTVALID:
+mov eax,4
+done:
+;call writedec
+;call crlf
+ret
+PlayersTurn endp
+
+
+ComputersTurn PROC,PlayersOcean : ptr byte ,ComputersTarget :ptr byte,Cr: byte ,Ccols: byte 
+call Random 
+mov Cr , dl
+
+call Random 
+mov Ccols , dl
+invoke GetIndex , Cr  , Ccols
+mov eax,index
+;call writedec
+;call crlf
+mov eax,0
+mov ecx,0
+mov ebx,0
+mov edx, PlayersOcean
+add edx, index
+mov cl,[edx]
+mov esi, ComputersTarget
+add esi,index
+cmp cl,'*'
+je NOTVALID
+cmp cl,'#'
+je NOTVALID
+cmp cl, '0'
+jne HIT
+mov bl,'x'
+mov [esi],bl
+mov bl,'#'
+mov [edx],bl
+mov eax,0 
+jmp done
+HIT:
+mov bl ,'o'
+mov [esi],bl
+mov bl,'*'
+mov [edx],bl
+sub cl,'A'
+mov edx,offset ComputersShips
+add edx,ecx
+mov bl,[edx]
+dec bl
+mov [edx],bl
+mov eax,1
+cmp bl,0
+jne done
+mov eax,2
+jmp done
+NOTVALID:
+mov eax,4
+done:
+;call writedec
+;call crlf
+ret
+ComputersTurn endp
+
+
+
+;;;;;;;;;;;;;;; User
+
+
+
+UserPlacment PROC  PlayerO:PTR Byte ,Input:PTR BYTE
+;			mov edi,offset PlayerOcean
+mov ebx,offset arrayCount
+mov eax,0
+			mov edi,PlayerO
+			mov edx,Input
+			mov al,[edx]
+			mov Character,al
+			add edx,2
+			mov al,[edx]
+			mov ah,[edx+3]					
+			cmp ah,al
+			je ver
+			invoke VerticalU, PlayerO
+			jmp bye
+			ver:
+			mov bl,[edx+1]
+			mov bh,[edx+4]
+			mov ah,[edx]
+			sub ah,'A'
+			mov RowNo,ah
+			cmp bl,bh
+			jl Cr
+			xchg bh,bl
+			Cr:
+			mov Col,bl
+			sub bh,bl
+			inc bh
+			cmp bh,GenralSize
+			jne InvalidSize
+			mov [esi],bh
+			inc esi
+
+			mov al,RowNo
+			mul numR
+
+			sub Col,'0'
+			add al,Col
+			movzx eax,al
+			add edi,eax
+			movzx ecx,GenralSize
+			L:
+				mov bl,[edi]
+				cmp bl,'0'
+				jne fehahaga
+				add edi,1 
+			loop L
+			mov ebx,offset arrayCount
+			sub Character,'A'
+			movzx ecx,Character
+			add ebx,ecx
+			mov cl,[ebx]
+			cmp cl,0
+			jne ShipCount
+			inc cl 
+			mov [ebx],cl
+			inc ValidShip
+
+
+lol:
+			mov edi,PlayerO
+			add edi,eax
+
+			movzx ecx,GenralSize
+			L1:
+					mov bl,ShowS
+					mov [edi],bl
+					inc edi
+			Loop L1
+
+			
+			jmp bye
+
+fehahaga:
+mov eax,-3
+jmp bye	
+InvalidSize:
+mov eax,-4
+jmp bye
+ShipCount:
+mov eax,-5
+bye:
+ret
+UserPlacment ENDP
+
+
+ShipInput PROC PlayerO:PTR BYTE ,Input:PTR BYTE 
+
+;mov edi,offset PlayerOcean
+mov esi,offset PlayersShips	
+
+            ;mov edi,offset PlayerOcean
+			mov edi,PlayerO
+			mov edx, Input
+			mov al,[edx]
+		
+			cmp al,'B'
+			jne R
+			mov GenralSize,4
+			mov ShowS,al
+			Invoke UserPlacment ,PlayerO	, Input	
+
+			jmp bye
+			R:
+			cmp al,'R'
+			jne U
+			mov GenralSize,5
+			mov ShowS,al
+			Invoke UserPlacment ,PlayerO	, Input
+			jmp bye
+			U:
+			cmp al,'U'
+			jne S
+			mov GenralSize,3
+			mov ShowS,al
+			Invoke UserPlacment ,PlayerO	, Input
+			jmp bye
+			S:
+			cmp al,'S'
+			jne D
+			mov GenralSize,3
+			mov ShowS,al
+			Invoke UserPlacment ,PlayerO	, Input
+			jmp bye
+			D:
+			mov GenralSize,2
+			mov ShowS,al
+			Invoke UserPlacment ,PlayerO	, Input
+			jmp bye
+			Invalid:
+					mov eax,-1
+
+		
+
+bye:
+ret
+ShipInput ENDP
+
+
+
+VerticalU PROC PlayerO : ptr byte
+
+mov bl,[edx+1]
+mov bh,[edx+4]
+cmp bh,bl
+
+jne InvalidDiagonal
+
+
+sub al,'A'
+mov RowS,al
+
+sub ah,'A'
+mov RowE,ah
+
+cmp RowS,ah
+jl Fr
+Xchg RowS,ah
+Xchg RowE,al
+Fr:
+sub ah,al
+inc ah
+cmp ah,GenralSize
+jne InvalidShSize
+mov [esi],ah
+inc esi
+			mov eax,0
+
+			mov al,RowS
+			mul numR
+			 
+			mov Col,bl
+			sub Col,'0'
+			add al,Col
+
+			movzx eax,al	
+			add edi,eax
+
+			movzx ecx,GenralSize
+			L:
+				mov bl,[edi]
+				cmp bl,'0'
+				jne Invalid
+				add edi,10 
+			loop L
+
+				mov ebx,offset arrayCount
+			sub Character,'A'
+			movzx ecx,Character
+			add ebx,ecx
+			mov cl,[ebx]
+			cmp cl,0
+			jne InvalidShip
+			inc cl 
+			mov [ebx],cl
+			inc ValidShip
+
+
+			mov edi, PlayerO
+			add edi,eax
+			movzx ecx,GenralSize
+			L1:
+					mov bl,ShowS
+					mov [edi],bl
+					add edi,10
+			Loop L1
+			
+			jmp byebye
+
+
+
+InvalidShip:
+mov eax,-5
+jmp byebye
+Invalid:
+mov eax,-3
+jmp byebye
+InvalidShSize:
+mov eax,-4
+jmp byebye
+InvalidDiagonal:
+mov eax,-1
+byebye:
+ret
+VerticalU ENDP
+
+; DllMain is required for any DLL
+DllMain PROC hInstance:DWORD, fdwReason:DWORD, lpReserved:DWORD 
+
+mov eax, 1		; Return true to caller. 
+ret 				
+DllMain ENDP
+
+END DllMain
+
+

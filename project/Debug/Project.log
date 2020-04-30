@@ -1,0 +1,20 @@
+﻿Build started 12/27/2017 3:47:49 PM.
+     1>Project "C:\Users\Nour Fayed\Desktop\project\Project.vcxproj" on node 2 (Build target(s)).
+     1>_MASM:
+         Assembling main.asm...
+         cmd.exe /C "C:\Users\Nour Fayed\AppData\Local\Temp\tmp68e28f8734f2437a852a6d2d4d6f7370.cmd"
+         ml.exe /c /nologo /Zi /Fo"Debug\main.obj" /I "E:\Teaching\Assembly 07\IrvineExamples" /W3 /errorReport:prompt  /Tamain.asm
+     1>main.asm(161): error A2206: missing operator in expression
+     1>main.asm(161): error A2114: INVOKE argument type mismatch : argument : 2
+     1>main.asm(161): error A2114: INVOKE argument type mismatch : argument : 1
+     1>main.asm(309): error A2006: undefined symbol : ComputerOcean
+     1>main.asm(322): error A2006: undefined symbol : ComputerOcean
+     1>main.asm(350): error A2006: undefined symbol : ComputerOcean
+     1>main.asm(366): error A2006: undefined symbol : ComputerOcean
+     1>main.asm(385): error A2006: undefined symbol : ComputerOcean
+     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\BuildCustomizations\masm.targets(50,5): error MSB3721: The command "ml.exe /c /nologo /Zi /Fo"Debug\main.obj" /I "E:\Teaching\Assembly 07\IrvineExamples" /W3 /errorReport:prompt  /Tamain.asm" exited with code 1.
+     1>Done Building Project "C:\Users\Nour Fayed\Desktop\project\Project.vcxproj" (Build target(s)) -- FAILED.
+
+Build FAILED.
+
+Time Elapsed 00:00:00.19

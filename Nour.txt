@@ -1,0 +1,17 @@
+      int CountDiff(BitArray B1, BitArray B2)
+        {
+            int r = 0;
+            for (int i = 0; i < rin; i++)
+            {
+                if (B1[i] != B2[i])
+                {
+                    r++;
+                }
+            }
+            MessageBox.Show(r.ToString());
+            return r;
+        }
+
+BitArray RedIn = new BitArray(Int32.MaxValue);
+        BitArray RedOut = new BitArray(Int32.MaxValue);
+        long rin, rout;

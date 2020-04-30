@@ -1,0 +1,136 @@
+include irvine32.inc
+.data
+ComputersOcean byte '0','0','0','0','0','0','0','0','0','0'
+                    ,'0','0','0','0','0','0','0','0','0','0'
+					,'0','0','0','0','0','0','0','0','B','0'
+					,'D','0','0','0','S','S','S','0','B','0'
+					,'D','0','0','0','0','0','0','0','B','0'
+					,'0','0','0','U','U','U','0','0','B','0'
+					,'0','0','0','0','0','0','0','0','0','0'
+					,'0','0','0','R','R','R','R','R','0','0'
+					,'0','0','0','0','0','0','0','0','0','0'
+					,'0','0','0','0','0','0','0','0','0','0'
+PlayersTarget byte 100 dup ('0')
+PlayersShips byte 27 dup (0)
+missSTR byte "MISS",0
+hitSTR byte "HIT",0
+sunk byte "THE SHIP SUNK",0
+ComputersShips byte 27 dup (0) 
+;PlayersShips byte 27 dup (0)
+index dword ?
+
+.code
+
+PlayersTurn PROC       ;,ComputersOcean : ptr byte ,PlayersTarget :ptr byte,r: byte ,cols: byte 
+;invoke GetIndex , r  , cols
+
+mov al,26
+mov index,al
+
+mov ecx,0                      ;ana safrt l  ecx
+mov edx, offset ComputersOcean
+mov esi,offset PlayersShips
+add edx,index
+mov cl,[edx]
+cmp cl,'0'
+jne HIT
+mov eax,0
+mov edx,offset PlayersTarget
+add edx,ecx
+mov bl,'x'
+mov [edx],bl
+mov edx,offset missSTR
+call writestring 
+call crlf
+jmp done
+HIT:
+mov bl,'*'
+mov [edx],bl
+mov eax,1
+mov edx,PlayersTarget
+add edx,ecx
+mov bl,'o'
+mov [edx],bl
+mov edx,offset hitSTR
+call writestring
+call crlf 
+sub cl,'A'
+mov bl,[esi+ecx]
+dec bl
+mov [esi+ecx],bl
+cmp bl,0
+jne done
+mov eax,2
+mov edx,offset sunk
+call writestring
+call crlf 
+done:
+
+ret
+PlayersTurn endp
+
+main proc
+call PlayersTurn
+mov dl,0
+mov r,dl
+mov col,dl
+BeginWhile:
+  mov edi , offset PlayersTarget
+  mov eax,0
+  mov ebx,0
+  mov ecx,0
+  mov al,r
+  mul cols
+  mov bl,al
+  mov eax,0
+
+  mov cl,col
+  add cl, bl
+  mov eax ,0
+  add al,[edi+ecx]
+  call writedec
+  call crlf
+  inc col
+  cmp col,10   ;dol yt7ato f registers on the spot
+  jne BeginWhile
+  mov col,0
+  inc r
+  cmp r,10   ;w dii kaman 
+  jne BeginWhile
+EndWhile:
+call crlf
+call crlf
+mov dl,0
+mov r,dl
+mov col,dl
+BeginWhile:
+  mov edi , offset ComputersOcean
+  mov eax,0
+  mov ebx,0
+  mov ecx,0
+  mov al,r
+  mul cols
+  mov bl,al
+  mov eax,0
+
+  mov cl,col
+  add cl, bl
+  mov eax ,0
+  add al,[edi+ecx]
+  call writedec
+  call crlf
+  inc col
+  cmp col,10   ;dol yt7ato f registers on the spot
+  jne BeginWhile
+  mov col,0
+  inc r
+  cmp r,10   ;w dii kaman 
+  jne BeginWhile
+EndWhile:
+
+
+ 
+
+exit
+main endp
+End main 
